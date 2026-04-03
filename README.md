@@ -1,93 +1,52 @@
-# Pass Generator
+# Pass Generator Monorepo
 
-Aplicativo React Native + Expo para gerar senhas e gerenciar histórico.
+Projeto organizado em monorepo com:
+- `Frontend` (React Native + Expo)
+- `backend` (Node.js + Express + Sequelize + PostgreSQL)
 
-## Pré-requisitos
+## Estrutura
 
-- Node.js LTS (>= 18)
-- npm ou yarn
-- Expo CLI (instalar globalmente):
-
-```bash
-npm install -g expo-cli
+```text
+pass-generator/
+  Frontend/
+  backend/
+  docker-compose.yml
+  .env.example
 ```
 
-## Instalação
+## Como rodar (forma recomendada)
 
-No diretório do projeto:
-
-```bash
-npm install
-```
-
-ou
+1. Na raiz, copie o arquivo de ambiente:
 
 ```bash
-yarn install
+cp .env.example .env
 ```
 
-## Execução
+2. Preencha no `.env` os valores sensiveis:
+- `POSTGRES_PASSWORD`
+- `DB_PASSWORD`
+- `JWT_SECRET`
 
-### Iniciar servidor Expo
+3. Suba os servicos:
 
 ```bash
-npm start
+docker compose up --build
 ```
 
-ou
+## Endpoints e acessos
 
-```bash
-yarn start
-```
+- Frontend: `http://localhost:19006`
+- Backend: `http://localhost:3333`
+- Health check backend: `http://localhost:3333/health`
+- PostgreSQL: `localhost:5432`
 
-### Android
+## Documentacao detalhada por modulo
 
-```bash
-npm run android
-```
+- Frontend: [Frontend/README.md](Frontend/README.md)
+- Backend: [backend/README.md](backend/README.md)
 
-ou
+## Seguranca
 
-```bash
-yarn android
-```
-
-### iOS
-
-```bash
-npm run ios
-```
-
-ou
-
-```bash
-yarn ios
-```
-
-### Web
-
-```bash
-npm run web
-```
-
-ou
-
-```bash
-yarn web
-```
-
-## Estrutura principal
-
-- `App.js` - componente raiz
-- `src/Home.js` - tela principal do gerador de senha
-- `src/History.js` - histórico de senhas geradas
-- `src/SignIn.js`, `src/SignUp.js` - telas de login/registro
-
-## Notas
-
-- Use um emulador de Android/iOS ou o Expo Go no celular para testar o app em dispositivos reais.
-- Se houver cache antigo, limpe com:
-
-```bash
-expo start -c
-```
+- Nao versionar `.env`
+- Versionar apenas arquivos de exemplo (`.env.example`)
+- Nunca subir segredos reais no GitHub
