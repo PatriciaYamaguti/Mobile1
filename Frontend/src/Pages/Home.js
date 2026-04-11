@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, Alert, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Clipboard from 'expo-clipboard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import PageTitle from '../componentes/PageTitle';
 import PrimaryButton from '../componentes/PrimaryButton';
 import TextLink from '../componentes/TextLink';
-import { signout as signoutRequest } from '../services/api';
+import { savePasswordHistory, signout as signoutRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { showAlert } from '../utils/showAlert';
 
@@ -33,14 +32,17 @@ export default function Home({ navigation }) {
 
   const savePasswordToHistory = async (appName, pw) => {
     try {
-      const existing = await AsyncStorage.getItem('history');
-      const arr = existing ? JSON.parse(existing) : [];
-      arr.unshift({ id: Date.now().toString(), account: appName, password: pw, createdAt: new Date().toISOString() });
-      await AsyncStorage.setItem('history', JSON.stringify(arr));
+      if (!token) {
+        throw new Error('Usuario nao autenticado');
+      }
+      await savePasswordHistory(token, {
+        appName,
+        password: pw,
+      });
       Alert.alert('Salvo', 'Senha salva com sucesso no historico');
     } catch (e) {
       console.warn('could not save password', e);
-      Alert.alert('Erro', 'Nao foi possivel salvar a senha');
+      Alert.alert('Erro', e.message || 'Nao foi possivel salvar a senha');
     }
   };
 
@@ -77,16 +79,22 @@ export default function Home({ navigation }) {
   const handleSignOut = async () => {
     if (loadingSignout) return;
 
+    let signoutApiError = null;
+
     try {
       setLoadingSignout(true);
       if (token) {
         await signoutRequest(token);
       }
-      await signOut();
     } catch (error) {
-      showAlert('Erro ao sair', error.message || 'Nao foi possivel finalizar sessao');
+      signoutApiError = error;
     } finally {
+      await signOut();
       setLoadingSignout(false);
+    }
+
+    if (signoutApiError) {
+      showAlert('Aviso', 'Sessao local encerrada, mas nao foi possivel avisar o servidor');
     }
   };
 

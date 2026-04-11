@@ -5,12 +5,14 @@ const defaultBaseUrl = Platform.OS === 'android' ? 'http://10.0.2.2:3333' : 'htt
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || defaultBaseUrl;
 
 async function request(path, options = {}) {
+  const { headers: customHeaders = {}, ...restOptions } = options;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers || {}),
+      ...customHeaders,
     },
-    ...options,
   });
 
   let data = null;
@@ -22,7 +24,9 @@ async function request(path, options = {}) {
 
   if (!response.ok) {
     const message = data?.message || 'Erro ao comunicar com o servidor';
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -45,6 +49,34 @@ export function signin(payload) {
 export function signout(token) {
   return request('/signout', {
     method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function savePasswordHistory(token, payload) {
+  return request('/passwords', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listPasswordHistory(token) {
+  return request('/passwords', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function deletePasswordHistory(token, id) {
+  return request(`/passwords/${id}`, {
+    method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
     },

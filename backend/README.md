@@ -36,6 +36,9 @@ API padrao em `http://localhost:3333`.
 
 ### Autenticada
 - `GET /signout` (opcional)
+- `POST /passwords` (salvar senha no historico)
+- `GET /passwords` (listar historico de senhas)
+- `DELETE /passwords/:id` (excluir senha do historico)
 
 ## Regras de negocio implementadas
 - Signup com campos: `name`, `email`, `password`, `repeatPassword`
@@ -44,6 +47,8 @@ API padrao em `http://localhost:3333`.
 - Valida se as senhas sao iguais
 - Senha salva com hash criptografico (PBKDF2 + salt)
 - Signin retorna JWT
+- Historico salvo com nome do aplicativo (`appName`)
+- Senha do historico salva com codificacao simples (Base64) e retornada decodificada no listar
 
 ## Exemplos de requisicoes
 
@@ -69,5 +74,25 @@ API padrao em `http://localhost:3333`.
 ```
 
 ### GET /signout
+Header:
+`Authorization: Bearer <token>`
+
+### POST /passwords
+Header:
+`Authorization: Bearer <token>`
+
+Body:
+```json
+{
+  "appName": "Instagram",
+  "password": "123"
+}
+```
+
+### GET /passwords
+Header:
+`Authorization: Bearer <token>`
+
+### DELETE /passwords/:id
 Header:
 `Authorization: Bearer <token>`

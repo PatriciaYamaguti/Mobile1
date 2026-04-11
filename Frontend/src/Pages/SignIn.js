@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import PageTitle from '../componentes/PageTitle';
 import FormField from '../componentes/FormField';
@@ -11,6 +11,8 @@ import { showAlert } from '../utils/showAlert';
 export default function SignIn({ navigation, route }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [apiEmailError, setApiEmailError] = useState('');
+  const [apiSenhaError, setApiSenhaError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { signIn } = useAuth();
@@ -40,6 +42,8 @@ export default function SignIn({ navigation, route }) {
 
   const handleSignIn = async () => {
     setSubmitted(true);
+    setApiEmailError('');
+    setApiSenhaError('');
     if (!canSubmit || loading) return;
 
     try {
@@ -51,6 +55,14 @@ export default function SignIn({ navigation, route }) {
 
       await signIn(data.token, data.user);
     } catch (error) {
+      if (error.status === 404) {
+        setApiEmailError('E-mail nao cadastrado.');
+        return;
+      }
+      if (error.status === 401) {
+        setApiSenhaError('Senha incorreta');
+        return;
+      }
       showAlert('Erro no login', error.message);
     } finally {
       setLoading(false);
@@ -64,22 +76,28 @@ export default function SignIn({ navigation, route }) {
       <FormField
         label="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(value) => {
+          setEmail(value);
+          if (apiEmailError) setApiEmailError('');
+        }}
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
         inputStyle={styles.input}
-        error={submitted ? emailError : ''}
+        error={submitted ? emailError || apiEmailError : ''}
       />
 
       <FormField
         label="Senha"
         value={senha}
-        onChangeText={setSenha}
+        onChangeText={(value) => {
+          setSenha(value);
+          if (apiSenhaError) setApiSenhaError('');
+        }}
         secureTextEntry
         autoCapitalize="none"
         inputStyle={styles.input}
-        error={submitted ? senhaError : ''}
+        error={submitted ? senhaError || apiSenhaError : ''}
       />
 
       <PrimaryButton

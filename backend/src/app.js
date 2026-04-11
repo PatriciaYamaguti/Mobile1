@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
+const passwordHistoryRoutes = require('./routes/passwordHistoryRoutes');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/', authRoutes);
+app.use('/', passwordHistoryRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: `Rota nao encontrada: ${req.method} ${req.originalUrl}` });

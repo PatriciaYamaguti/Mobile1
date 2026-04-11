@@ -73,12 +73,12 @@ async function signin(req, res) {
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Credenciais invalidas' });
+      return res.status(404).json({ message: 'E-mail nao cadastrado.' });
     }
 
     const passwordMatches = verifyPassword(password, user.passwordHash);
     if (!passwordMatches) {
-      return res.status(401).json({ message: 'Credenciais invalidas' });
+      return res.status(401).json({ message: 'Senha incorreta' });
     }
 
     const token = buildToken(user);

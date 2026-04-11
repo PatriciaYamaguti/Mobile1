@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import PageTitle from '../componentes/PageTitle';
 import PrimaryButton from '../componentes/PrimaryButton';
 import HistoryItemCard from '../componentes/HistoryItemCard';
+import { deletePasswordHistory, listPasswordHistory } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function History({ navigation }) {
   const [items, setItems] = useState([]);
   const [visibleItems, setVisibleItems] = useState({});
+  const { token } = useAuth();
 
   const loadHistory = async () => {
     try {
-      const existing = await AsyncStorage.getItem('history');
-      const arr = existing ? JSON.parse(existing) : [];
+      if (!token) {
+        setItems([]);
+        return;
+      }
+
+      const arr = await listPasswordHistory(token);
       setItems(arr);
       setVisibleItems({});
     } catch (e) {
       console.warn('Nao foi possivel carregar o historico', e);
+      Alert.alert('Erro', e.message || 'Nao foi possivel carregar o historico');
     }
   };
 
@@ -31,20 +38,27 @@ export default function History({ navigation }) {
   };
 
   const removeEntry = async (id) => {
-    const remaining = items.filter((item) => item.id !== id);
-    setItems(remaining);
-    setVisibleItems((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-    await AsyncStorage.setItem('history', JSON.stringify(remaining));
+    try {
+      if (!token) {
+        throw new Error('Usuario nao autenticado');
+      }
+
+      await deletePasswordHistory(token, id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      setVisibleItems((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (e) {
+      Alert.alert('Erro', e.message || 'Nao foi possivel excluir a senha');
+    }
   };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', loadHistory);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, token]);
 
   return (
     <View style={styles.container}>
@@ -59,7 +73,11 @@ export default function History({ navigation }) {
             return (
               <HistoryItemCard
                 key={entry.id}
-                entry={entry}
+                entry={{
+                  id: entry.id,
+                  account: entry.appName,
+                  password: entry.password || '',
+                }}
                 isVisible={isVisible}
                 onToggleVisibility={() => togglePasswordVisibility(entry.id)}
                 onCopy={() => copyPassword(entry.password)}
