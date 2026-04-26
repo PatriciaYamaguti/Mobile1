@@ -1,6 +1,6 @@
 import { Alert, Platform } from 'react-native';
 
-export function showAlert(title, message) {
+export function showAlert(title: string, message: string) {
   if (Platform.OS === 'web' && typeof window !== 'undefined' && typeof window.alert === 'function') {
     window.alert(`${title}\n${message}`);
     return;

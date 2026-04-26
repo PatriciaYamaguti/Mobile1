@@ -1,3 +1,4 @@
+import './global.css';
 import React from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,14 +9,21 @@ import SignIn from './src/Pages/SignIn';
 import SignUp from './src/Pages/SignUp';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  Home: undefined;
+  History: undefined;
+  SignIn: { email?: string } | undefined;
+  SignUp: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
   const { token, loadingAuth } = useAuth();
 
   if (loadingAuth) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View className="flex-1 items-center justify-center">
         <Text>Carregando...</Text>
       </View>
     );

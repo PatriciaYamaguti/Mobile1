@@ -49,4 +49,3 @@ docker compose up --build
 
 - Nao versionar `.env`
 - Versionar apenas arquivos de exemplo (`.env.example`)
-- Nunca subir segredos reais no GitHub

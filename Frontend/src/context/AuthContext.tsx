@@ -1,11 +1,17 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { ReactNode } from 'react';
+import type { AuthContextType, User } from '../types';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }) {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
+type AuthProviderProps = {
+  children: ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
@@ -18,7 +24,7 @@ export function AuthProvider({ children }) {
 
         setToken(storedToken || null);
         setUser(storedUser ? JSON.parse(storedUser) : null);
-      } catch (error) {
+      } catch {
         setToken(null);
         setUser(null);
       } finally {
@@ -29,7 +35,7 @@ export function AuthProvider({ children }) {
     loadAuthFromStorage();
   }, []);
 
-  const signIn = async (nextToken, nextUser) => {
+  const signIn = async (nextToken: string, nextUser: User) => {
     await AsyncStorage.setItem('authToken', nextToken);
     await AsyncStorage.setItem('authUser', JSON.stringify(nextUser));
     setToken(nextToken);

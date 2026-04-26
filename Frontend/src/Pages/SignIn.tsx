@@ -1,5 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PageTitle from '../componentes/PageTitle';
 import FormField from '../componentes/FormField';
 import PrimaryButton from '../componentes/PrimaryButton';
@@ -7,8 +8,12 @@ import TextLink from '../componentes/TextLink';
 import { signin } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { showAlert } from '../utils/showAlert';
+import type { AppError } from '../types';
+import type { RootStackParamList } from '../../App';
 
-export default function SignIn({ navigation, route }) {
+type SignInProps = NativeStackScreenProps<RootStackParamList, 'SignIn'>;
+
+export default function SignIn({ navigation, route }: SignInProps) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [apiEmailError, setApiEmailError] = useState('');
@@ -54,24 +59,25 @@ export default function SignIn({ navigation, route }) {
       });
 
       await signIn(data.token, data.user);
-    } catch (error) {
-      if (error.status === 404) {
+    } catch (error: unknown) {
+      const apiError = error as AppError;
+      if (apiError.status === 404) {
         setApiEmailError('E-mail nao cadastrado.');
         return;
       }
-      if (error.status === 401) {
+      if (apiError.status === 401) {
         setApiSenhaError('Senha incorreta');
         return;
       }
-      showAlert('Erro no login', error.message);
+      showAlert('Erro no login', apiError.message || 'Nao foi possivel fazer login');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <PageTitle style={styles.title}>SIGN IN</PageTitle>
+    <View className="flex-1 justify-center bg-white p-5">
+      <PageTitle className="mb-[30px] text-4xl">SIGN IN</PageTitle>
 
       <FormField
         label="Email"
@@ -83,7 +89,7 @@ export default function SignIn({ navigation, route }) {
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
-        inputStyle={styles.input}
+        inputClassName="mb-[18px]"
         error={submitted ? emailError || apiEmailError : ''}
       />
 
@@ -96,7 +102,7 @@ export default function SignIn({ navigation, route }) {
         }}
         secureTextEntry
         autoCapitalize="none"
-        inputStyle={styles.input}
+        inputClassName="mb-[18px]"
         error={submitted ? senhaError || apiSenhaError : ''}
       />
 
@@ -106,31 +112,9 @@ export default function SignIn({ navigation, route }) {
         onPress={handleSignIn}
       />
 
-      <Text style={styles.footerText}>
+      <Text className="mt-3.5 text-center text-sm text-[#555]">
         Nao possui conta ainda? <TextLink onPress={() => navigation.navigate('SignUp')}>Crie agora</TextLink>
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 36,
-    marginBottom: 30,
-  },
-  input: {
-    marginBottom: 18,
-  },
-  footerText: {
-    marginTop: 14,
-    color: '#555',
-    textAlign: 'center',
-    fontSize: 14,
-  },
-});

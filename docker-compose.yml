@@ -48,6 +48,9 @@ services:
       - backend
     environment:
       EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL}
+    command: >
+      sh -c "if [ ! -d node_modules/nativewind ]; then npm install; fi &&
+      npm run web -- --clear --host lan --port 19006"
     ports:
       - "19006:19006"
     volumes:

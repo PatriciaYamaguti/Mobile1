@@ -1,93 +1,96 @@
-# Pass Generator
+# Pass Generator - Frontend
 
-Aplicativo React Native + Expo para gerar senhas e gerenciar histórico.
+Aplicativo React Native com Expo para gerar senhas, salvar historico e autenticar usuarios.
 
-## Pré-requisitos
+## Stack
 
-- Node.js LTS (>= 18)
-- npm ou yarn
-- Expo CLI (instalar globalmente):
+- Expo SDK 54
+- React Native 0.81.5
+- TypeScript
+- NativeWind v4 + Tailwind CSS v3.4.x
+
+## Pre-requisitos
+
+- Node.js `20.19.4` (ou `20.x` compativel)
+- npm
+
+Verificacao rapida:
 
 ```bash
-npm install -g expo-cli
+node -v
+npm -v
 ```
 
-## Instalação
+## Instalacao
 
-No diretório do projeto:
+No diretorio `Frontend`:
 
 ```bash
 npm install
 ```
 
-ou
+## Execucao
+
+Iniciar o projeto com cache limpo:
 
 ```bash
-yarn install
+npx expo start --clear
 ```
 
-## Execução
+Atalhos no terminal do Expo:
 
-### Iniciar servidor Expo
+- `a` abre no Android
+- `i` abre no iOS (macOS)
+- `w` abre no Web
 
-```bash
-npm start
 ```
 
-ou
+## Configuracao NativeWind
 
-```bash
-yarn start
-```
+Arquivos de configuracao:
 
-### Android
+- `babel.config.js`
+- `tailwind.config.js`
+- `global.css`
+- `metro.config.js`
+- `nativewind-env.d.ts`
+- `tsconfig.json`
 
-```bash
-npm run android
-```
+Import do CSS global (ja configurado):
 
-ou
-
-```bash
-yarn android
-```
-
-### iOS
-
-```bash
-npm run ios
-```
-
-ou
-
-```bash
-yarn ios
-```
-
-### Web
-
-```bash
-npm run web
-```
-
-ou
-
-```bash
-yarn web
+```tsx
+// App.tsx (primeira linha)
+import './global.css';
 ```
 
 ## Estrutura principal
 
-- `App.js` - componente raiz
-- `src/Home.js` - tela principal do gerador de senha
-- `src/History.js` - histórico de senhas geradas
-- `src/SignIn.js`, `src/SignUp.js` - telas de login/registro
+- `App.tsx` - entrada principal com navegacao
+- `src/Pages/Home.tsx` - geracao/copia/salvar senha
+- `src/Pages/History.tsx` - lista de historico
+- `src/Pages/SignIn.tsx` - login
+- `src/Pages/SignUp.tsx` - cadastro
+- `src/context/AuthContext.tsx` - estado de autenticacao
+- `src/services/api.ts` - comunicacao com backend
 
-## Notas
+## API
 
-- Use um emulador de Android/iOS ou o Expo Go no celular para testar o app em dispositivos reais.
-- Se houver cache antigo, limpe com:
+A URL base da API pode ser configurada por variavel de ambiente:
+
+- `EXPO_PUBLIC_API_URL`
+
+Sem essa variavel, o app usa:
+
+- Android emulador: `http://10.0.2.2:3333`
+- Demais plataformas: `http://localhost:3333`
+
+## Scripts uteis
 
 ```bash
-expo start -c
+npm run start
+npm run android
+npm run ios
+npm run web
+npx tsc --noEmit
+npx expo-doctor
 ```
