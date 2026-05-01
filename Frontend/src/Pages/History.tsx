@@ -38,7 +38,7 @@ export default function History({ navigation }: HistoryProps) {
 
   return (
     <View className="flex-1 items-center justify-center bg-[#f9f9f9] p-5">
-      <PageTitle className="mb-5 text-2xl text-[#0057D9]">HISTORICO DE SENHAS</PageTitle>
+      <PageTitle className="mb-5 text-[22px] text-[#0057D9]">HISTORICO DE SENHAS</PageTitle>
       <Text className={`mb-3 text-sm font-semibold ${isOnline ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
         {isOnline ? 'Online' : 'Offline'}
       </Text>

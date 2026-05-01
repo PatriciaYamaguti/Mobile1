@@ -21,7 +21,7 @@ export default function PrimaryButton({
 
   return (
     <Pressable
-      className={`mt-1.5 h-[50px] items-center justify-center rounded-md ${buttonClassName} ${className}`}
+      className={`mt-1.5 h-10 items-center justify-center rounded-md ${buttonClassName} ${className}`}
       disabled={disabled}
       onPress={onPress}
     >

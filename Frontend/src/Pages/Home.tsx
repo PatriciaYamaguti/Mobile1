@@ -98,7 +98,7 @@ export default function Home({ navigation }: HomeProps) {
         contentContainerClassName="flex-grow items-center justify-center pb-6"
         showsVerticalScrollIndicator={false}
       >
-        <PageTitle className="mb-1 text-[28px] uppercase text-[#0057D9]">GERADOR DE SENHA</PageTitle>
+        <PageTitle className="mb-1 text-[24px] uppercase text-[#0057D9]">GERADOR DE SENHA</PageTitle>
         {displayName ? <Text className="mb-3 mt-2 text-sm text-[#333]">Bem-vindo, {displayName}</Text> : null}
         <Text className={`mb-2 text-sm font-semibold ${isOnline ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
           {isOnline ? 'Online' : 'Offline'}
