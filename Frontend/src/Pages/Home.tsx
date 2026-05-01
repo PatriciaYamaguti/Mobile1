@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, Alert } from 'react-native';
+import { View, Text, Image, Alert, Modal, TextInput, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Clipboard from 'expo-clipboard';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -27,6 +27,8 @@ function makePassword(length = 12): string {
 export default function Home({ navigation }: HomeProps) {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [appNameModal, setAppNameModal] = useState('');
   const [loadingSignout, setLoadingSignout] = useState(false);
   const { user, token, signOut } = useAuth();
   const { addPassword, isOnline, syncing, syncPending } = usePasswords();
@@ -35,13 +37,29 @@ export default function Home({ navigation }: HomeProps) {
     setDisplayName(user?.name || user?.email || '');
   }, [user?.name, user?.email]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     const pw = makePassword();
     setPassword(pw);
-    await addPassword('Gerada no app', pw);
+  };
+
+  const handleSave = () => {
+    if (!password.trim()) return;
+    setAppNameModal('');
+    setModalVisible(true);
+  };
+
+  const canCreate = password.trim().length > 0 && appNameModal.trim().length > 0;
+
+  const handleCreate = async () => {
+    if (!canCreate) return;
+    await addPassword(appNameModal.trim(), password);
     if (isOnline) {
       await syncPending();
     }
+    Alert.alert('Salvo', 'Senha salva localmente com sucesso');
+    setModalVisible(false);
+    setAppNameModal('');
+    setPassword('');
   };
 
   const handleCopy = () => {
@@ -75,14 +93,18 @@ export default function Home({ navigation }: HomeProps) {
 
   return (
     <View className="flex-1 bg-white p-5">
-      <View className="flex-1 w-full items-center justify-center">
-        <PageTitle className="mb-3 text-[28px] uppercase text-[#0057D9]">GERADOR DE SENHA</PageTitle>
-        {displayName ? <Text className="mb-2 text-sm text-[#333]">Bem-vindo, {displayName}</Text> : null}
+      <ScrollView
+        className="flex-1 w-full"
+        contentContainerClassName="flex-grow items-center justify-center pb-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <PageTitle className="mb-1 text-[28px] uppercase text-[#0057D9]">GERADOR DE SENHA</PageTitle>
+        {displayName ? <Text className="mb-3 mt-2 text-sm text-[#333]">Bem-vindo, {displayName}</Text> : null}
         <Text className={`mb-2 text-sm font-semibold ${isOnline ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
           {isOnline ? 'Online' : 'Offline'}
         </Text>
         {syncing ? <Text className="mb-2 text-xs text-[#1976D2]">Sincronizando pendencias...</Text> : null}
-        <Image className="mb-5 h-[180px] w-[180px]" resizeMode="contain" source={require('../pass.png')} />
+        <Image className="mb-5 h-[150px] w-[150px] self-center" resizeMode="contain" source={require('../pass.png')} />
 
         <View className="mb-2.5 min-h-[60px] w-full items-center justify-center rounded-md bg-[#4DB5FF] p-2.5">
           <Text selectable className="font-mono text-xl font-bold text-white">
@@ -90,27 +112,35 @@ export default function Home({ navigation }: HomeProps) {
           </Text>
         </View>
 
-        <View className="mb-2.5 w-full gap-2.5">
+        <View className="mb-2.5 w-full gap-1.5">
           <PrimaryButton
             title="GERAR"
             onPress={handleGenerate}
-            className="mt-0 bg-[#1976D2]"
-            textClassName="text-lg"
+            className="mt-0 h-10 bg-[#1976D2]"
+            textClassName="text-base"
+          />
+
+          <PrimaryButton
+            title="SALVAR"
+            onPress={handleSave}
+            disabled={!password.trim()}
+            className="mt-0 h-10 bg-[#0288D1]"
+            textClassName="text-base"
           />
 
           <PrimaryButton
             title="COPIAR"
             onPress={handleCopy}
-            className="mt-0 bg-[#1976D2]"
-            textClassName="text-lg"
+            className="mt-0 h-10 bg-[#1976D2]"
+            textClassName="text-base"
           />
 
           <PrimaryButton
             title={loadingSignout ? 'SAINDO...' : 'SAIR'}
             onPress={handleSignOut}
             disabled={loadingSignout}
-            className="mt-0 bg-[#d32f2f]"
-            textClassName="text-lg"
+            className="mt-0 h-10 bg-[#d32f2f]"
+            textClassName="text-base"
           />
         </View>
 
@@ -118,7 +148,42 @@ export default function Home({ navigation }: HomeProps) {
           Ver Senhas
         </TextLink>
 
-      </View>
+      </ScrollView>
+
+      <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <View className="flex-1 items-center justify-center bg-black/50">
+          <View className="w-[90%] items-stretch rounded-xl bg-white p-5">
+            <Text className="mb-[15px] text-center text-lg font-bold text-[#1976D2]">CADASTRO DE SENHA</Text>
+
+            <Text className="mb-1.5 ml-1 text-sm text-[#333]">Senha gerada</Text>
+            <View className="mb-3 h-[45px] justify-center rounded-md border border-[#1976D2] bg-[#E0F7FF] px-3">
+              <Text className="text-base text-black">{password}</Text>
+            </View>
+
+            <Text className="mb-1.5 ml-1 text-sm text-[#333]">Nome do aplicativo</Text>
+            <TextInput
+              className="mb-2.5 h-[46px] w-full rounded-md border border-[#1976D2] bg-[#E8F1FF] px-3"
+              value={appNameModal}
+              onChangeText={setAppNameModal}
+              placeholder="Informe um nome de app"
+            />
+
+            <View className="mt-2.5 w-full gap-2.5">
+              <PrimaryButton
+                title="CRIAR"
+                disabled={!canCreate}
+                onPress={handleCreate}
+                className="mb-0 mt-0 h-12 w-full rounded-md"
+              />
+              <PrimaryButton
+                title="CANCELAR"
+                onPress={() => setModalVisible(false)}
+                className="mb-0 mt-0 h-12 w-full rounded-md"
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <StatusBar style="auto" />
     </View>

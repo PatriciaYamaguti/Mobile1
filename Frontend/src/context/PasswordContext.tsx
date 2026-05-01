@@ -145,9 +145,7 @@ export function PasswordProvider({ children }: { children: ReactNode }) {
               remoteId: Number(response.data.id),
             },
           });
-        } catch {
-          // Mantem pendente para nova tentativa automatica.
-        }
+        } catch {}
       }
     } finally {
       isSyncingRef.current = false;
