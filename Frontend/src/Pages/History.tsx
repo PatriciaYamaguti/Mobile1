@@ -5,40 +5,16 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PageTitle from '../componentes/PageTitle';
 import PrimaryButton from '../componentes/PrimaryButton';
 import HistoryItemCard from '../componentes/HistoryItemCard';
-import { deletePasswordHistory, listPasswordHistory } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import type { PasswordHistoryEntry } from '../types';
+import { usePasswords } from '../context/PasswordContext';
 import type { RootStackParamList } from '../../App';
 
 type HistoryProps = NativeStackScreenProps<RootStackParamList, 'History'>;
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
-}
-
 export default function History({ navigation }: HistoryProps) {
-  const [items, setItems] = useState<PasswordHistoryEntry[]>([]);
-  const [visibleItems, setVisibleItems] = useState<Record<number, boolean>>({});
-  const { token } = useAuth();
+  const [visibleItems, setVisibleItems] = useState<Record<string, boolean>>({});
+  const { items, removePassword, isOnline } = usePasswords();
 
-  const loadHistory = async () => {
-    try {
-      if (!token) {
-        setItems([]);
-        return;
-      }
-
-      const arr = await listPasswordHistory(token);
-      setItems(arr);
-      setVisibleItems({});
-    } catch (e: unknown) {
-      console.warn('Nao foi possivel carregar o historico', e);
-      Alert.alert('Erro', getErrorMessage(e, 'Nao foi possivel carregar o historico'));
-    }
-  };
-
-  const togglePasswordVisibility = (id: number) => {
+  const togglePasswordVisibility = (id: string) => {
     setVisibleItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
@@ -47,34 +23,27 @@ export default function History({ navigation }: HistoryProps) {
     Alert.alert('Copiado', 'Senha copiada para a area de transferencia');
   };
 
-  const removeEntry = async (id: number) => {
-    try {
-      if (!token) {
-        throw new Error('Usuario nao autenticado');
-      }
-
-      await deletePasswordHistory(token, id);
-      setItems((prev) => prev.filter((item) => item.id !== id));
-      setVisibleItems((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-    } catch (e: unknown) {
-      Alert.alert('Erro', getErrorMessage(e, 'Nao foi possivel excluir a senha'));
-    }
+  const removeEntry = async (id: string) => {
+    await removePassword(id);
+    setVisibleItems((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   };
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', loadHistory);
-    return unsubscribe;
-  }, [navigation, token]);
+    setVisibleItems({});
+  }, [items.length]);
 
   return (
     <View className="flex-1 items-center justify-center bg-[#f9f9f9] p-5">
       <PageTitle className="mb-5 text-2xl text-[#0057D9]">HISTORICO DE SENHAS</PageTitle>
+      <Text className={`mb-3 text-sm font-semibold ${isOnline ? 'text-[#2e7d32]' : 'text-[#d32f2f]'}`}>
+        {isOnline ? 'Online' : 'Offline'}
+      </Text>
 
-      <ScrollView className="mb-5 max-h-[200px] w-full" contentContainerClassName="items-center pb-5">
+      <ScrollView className="mb-5 max-h-[300px] w-full" contentContainerClassName="items-center pb-5">
         {items.length === 0 ? (
           <Text className="mt-10 text-center text-base text-[#666]">Nenhuma senha gerada ainda</Text>
         ) : (
@@ -87,6 +56,8 @@ export default function History({ navigation }: HistoryProps) {
                   id: entry.id,
                   account: entry.appName,
                   password: entry.password || '',
+                  createdAt: entry.createdAt,
+                  syncStatus: entry.syncStatus,
                 }}
                 isVisible={isVisible}
                 onToggleVisibility={() => togglePasswordVisibility(entry.id)}

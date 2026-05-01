@@ -8,6 +8,7 @@ import History from './src/Pages/History';
 import SignIn from './src/Pages/SignIn';
 import SignUp from './src/Pages/SignUp';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { PasswordProvider } from './src/context/PasswordContext';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -49,9 +50,11 @@ function RootNavigator() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
+      <PasswordProvider>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </PasswordProvider>
     </AuthProvider>
   );
 }

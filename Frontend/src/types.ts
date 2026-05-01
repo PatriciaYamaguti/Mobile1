@@ -30,9 +30,21 @@ export type PasswordPayload = {
 };
 
 export type PasswordHistoryEntry = {
-  id: number;
+  id: number | string;
   appName: string;
   password: string;
+  createdAt?: string;
+};
+
+export type PasswordSyncStatus = 'pending' | 'synced';
+
+export type LocalPasswordEntry = {
+  id: string;
+  appName: string;
+  password: string;
+  createdAt: string;
+  syncStatus: PasswordSyncStatus;
+  remoteId?: number;
 };
 
 export type AuthResponse = {
