@@ -7,8 +7,8 @@ import PageTitle from '../componentes/PageTitle';
 import PrimaryButton from '../componentes/PrimaryButton';
 import TextLink from '../componentes/TextLink';
 import { signout as signoutRequest } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { usePasswords } from '../context/PasswordContext';
+import { useAuthStore } from '../store/authStore';
+import { usePasswordStore } from '../store/passwordStore';
 import { showAlert } from '../utils/showAlert';
 import type { AppError } from '../types';
 import type { RootStackParamList } from '../../App';
@@ -25,13 +25,19 @@ function makePassword(length = 12): string {
 }
 
 export default function Home({ navigation }: HomeProps) {
-  const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [appNameModal, setAppNameModal] = useState('');
   const [loadingSignout, setLoadingSignout] = useState(false);
-  const { user, token, signOut } = useAuth();
-  const { addPassword, isOnline, syncing, syncPending } = usePasswords();
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
+  const password = usePasswordStore((state) => state.password);
+  const isOnline = usePasswordStore((state) => state.isOnline);
+  const syncing = usePasswordStore((state) => state.syncing);
+  const setPassword = usePasswordStore((state) => state.setPassword);
+  const addToHistory = usePasswordStore((state) => state.addToHistory);
+  const syncPending = usePasswordStore((state) => state.syncPending);
 
   useEffect(() => {
     setDisplayName(user?.name || user?.email || '');
@@ -52,9 +58,9 @@ export default function Home({ navigation }: HomeProps) {
 
   const handleCreate = async () => {
     if (!canCreate) return;
-    await addPassword(appNameModal.trim(), password);
+    addToHistory(appNameModal.trim(), password);
     if (isOnline) {
-      await syncPending();
+      await syncPending(token);
     }
     Alert.alert('Salvo', 'Senha salva localmente com sucesso');
     setModalVisible(false);
@@ -82,7 +88,7 @@ export default function Home({ navigation }: HomeProps) {
     } catch (error: unknown) {
       signoutApiError = error as AppError;
     } finally {
-      await signOut();
+      logout();
       setLoadingSignout(false);
     }
 

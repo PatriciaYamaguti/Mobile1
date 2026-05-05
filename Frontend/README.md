@@ -70,7 +70,8 @@ import './global.css';
 - `src/Pages/History.tsx` - lista de historico
 - `src/Pages/SignIn.tsx` - login
 - `src/Pages/SignUp.tsx` - cadastro
-- `src/context/AuthContext.tsx` - estado de autenticacao
+- `src/store/authStore.ts` - estado de autenticacao com Zustand
+- `src/store/passwordStore.ts` - estado de senha/historico com Zustand
 - `src/services/api.ts` - comunicacao com backend
 
 ## API
@@ -83,14 +84,3 @@ Sem essa variavel, o app usa:
 
 - Android emulador: `http://10.0.2.2:3333`
 - Demais plataformas: `http://localhost:3333`
-
-## Scripts uteis
-
-```bash
-npm run start
-npm run android
-npm run ios
-npm run web
-npx tsc --noEmit
-npx expo-doctor
-```

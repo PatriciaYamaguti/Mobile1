@@ -6,7 +6,7 @@ import FormField from '../componentes/FormField';
 import PrimaryButton from '../componentes/PrimaryButton';
 import TextLink from '../componentes/TextLink';
 import { signin } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 import { showAlert } from '../utils/showAlert';
 import type { AppError } from '../types';
 import type { RootStackParamList } from '../../App';
@@ -20,7 +20,7 @@ export default function SignIn({ navigation, route }: SignInProps) {
   const [apiSenhaError, setApiSenhaError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { signIn } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const MIN_PASSWORD_LENGTH = 6;
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function SignIn({ navigation, route }: SignInProps) {
         password: senha,
       });
 
-      await signIn(data.token, data.user);
+      login(data.token, data.user);
     } catch (error: unknown) {
       const apiError = error as AppError;
       if (apiError.status === 404) {

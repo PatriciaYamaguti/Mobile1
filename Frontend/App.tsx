@@ -1,14 +1,15 @@
 import './global.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import NetInfo from '@react-native-community/netinfo';
 import Home from './src/Pages/Home';
 import History from './src/Pages/History';
 import SignIn from './src/Pages/SignIn';
 import SignUp from './src/Pages/SignUp';
-import { AuthProvider, useAuth } from './src/context/AuthContext';
-import { PasswordProvider } from './src/context/PasswordContext';
+import { useAuthStore } from './src/store/authStore';
+import { usePasswordStore } from './src/store/passwordStore';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -20,7 +21,31 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-  const { token, loadingAuth } = useAuth();
+  const token = useAuthStore((state) => state.token);
+  const loadingAuth = useAuthStore((state) => state.loadingAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setOnline = usePasswordStore((state) => state.setOnline);
+  const syncPending = usePasswordStore((state) => state.syncPending);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((netState) => {
+      const connected = Boolean(netState.isConnected && netState.isInternetReachable !== false);
+      setOnline(connected);
+      if (connected) {
+        syncPending(token);
+      }
+    });
+
+    NetInfo.fetch().then((netState) => {
+      const connected = Boolean(netState.isConnected && netState.isInternetReachable !== false);
+      setOnline(connected);
+      if (connected) {
+        syncPending(token);
+      }
+    });
+
+    return unsubscribe;
+  }, [setOnline, syncPending, token]);
 
   if (loadingAuth) {
     return (
@@ -32,7 +57,7 @@ function RootNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
-      {token ? (
+      {isAuthenticated ? (
         <>
           <Stack.Screen name="Home" component={Home} options={{ title: 'Home' }} />
           <Stack.Screen name="History" component={History} options={{ title: 'Historico de senhas' }} />
@@ -49,12 +74,8 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <PasswordProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      </PasswordProvider>
-    </AuthProvider>
+    <NavigationContainer>
+      <RootNavigator />
+    </NavigationContainer>
   );
 }

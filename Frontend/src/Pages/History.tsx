@@ -5,14 +5,18 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PageTitle from '../componentes/PageTitle';
 import PrimaryButton from '../componentes/PrimaryButton';
 import HistoryItemCard from '../componentes/HistoryItemCard';
-import { usePasswords } from '../context/PasswordContext';
+import { useAuthStore } from '../store/authStore';
+import { usePasswordStore } from '../store/passwordStore';
 import type { RootStackParamList } from '../../App';
 
 type HistoryProps = NativeStackScreenProps<RootStackParamList, 'History'>;
 
 export default function History({ navigation }: HistoryProps) {
   const [visibleItems, setVisibleItems] = useState<Record<string, boolean>>({});
-  const { items, removePassword, isOnline } = usePasswords();
+  const token = useAuthStore((state) => state.token);
+  const items = usePasswordStore((state) => state.history);
+  const isOnline = usePasswordStore((state) => state.isOnline);
+  const removeFromHistory = usePasswordStore((state) => state.removeFromHistory);
 
   const togglePasswordVisibility = (id: string) => {
     setVisibleItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -24,7 +28,7 @@ export default function History({ navigation }: HistoryProps) {
   };
 
   const removeEntry = async (id: string) => {
-    await removePassword(id);
+    await removeFromHistory(id, token);
     setVisibleItems((prev) => {
       const next = { ...prev };
       delete next[id];

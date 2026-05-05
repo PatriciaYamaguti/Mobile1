@@ -4,14 +4,6 @@ export type User = {
   email?: string;
 };
 
-export type AuthContextType = {
-  token: string | null;
-  user: User | null;
-  loadingAuth: boolean;
-  signIn: (nextToken: string, nextUser: User) => Promise<void>;
-  signOut: () => Promise<void>;
-};
-
 export type SignInPayload = {
   email: string;
   password: string;
